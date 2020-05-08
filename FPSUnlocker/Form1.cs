@@ -24,7 +24,7 @@ namespace FPSUnlocker
         IntPtr Threadscheduler;
         int DelayOffset;
         public  MemorySharp Sharp;
-        Thread LoopThread, WatchThread = null;
+        Thread WatchThread = null;
         bool Init = false;
         #endregion
 
@@ -42,11 +42,11 @@ namespace FPSUnlocker
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            //if (Process.GetProcessesByName("RobloxPlayerBeta").Length > 0 && Process.GetProcessesByName("RobloxPlayerBeta").First() == Roblox)
-            //    WriteMemory<double>(Roblox.Handle, Threadscheduler + DelayOffset, (double)(1.0 / 60)); // Set back to normal!
-            
-            LoopThread.Abort();
-            WatchThread.Abort();
+            if (Process.GetProcessesByName("RobloxPlayerBeta").Length > 0 && Process.GetProcessesByName("RobloxPlayerBeta").First().Id == CurrentPID)
+                WriteMemory<double>(Roblox.Handle, Threadscheduler + DelayOffset, (double)(1.0 / 60)); // Set back to normal!
+
+            if (WatchThread != null)
+                WatchThread.Abort();
         }
 
         private void WatchProcess()
@@ -70,18 +70,16 @@ namespace FPSUnlocker
 
                     Threadscheduler = new RemotePointer(Sharp, GetThreadScheduler).Execute<IntPtr>();
                     DelayOffset = FindTaskSchedulerFrameDelayOffset(Roblox.Handle, Threadscheduler);
-                    if (LoopThread == null)
-                    {
-                        LoopThread = new Thread(new ThreadStart(LoopWith60PS));
-                        LoopThread.Start();
-                    }
                 }
+                Thread.Sleep(500);
             }
         }
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
             CurrentFps = 1.0 / (double)(numericUpDown1.Value);
+            if (Roblox != null)
+                WriteMemory<double>(Roblox.Handle, Threadscheduler + DelayOffset, CurrentFps);
         }
 
         #region FPSUnlocker
@@ -95,38 +93,6 @@ namespace FPSUnlocker
                 if (difference < 0.004) return i;
             }
             return 0;
-        }
-
-        long fpsStartTime, fpsFrameCount;
-        private void LimitFPS(int fps) // Thanks google!
-        {
-            long freq = System.Diagnostics.Stopwatch.Frequency;
-            long frame = System.Diagnostics.Stopwatch.GetTimestamp();
-            while ((frame - fpsStartTime) * fps < freq * fpsFrameCount)
-            {
-                int sleepTime = (int)((fpsStartTime * fps + freq * fpsFrameCount - frame * fps) * 1000 / (freq * fps));
-                if (sleepTime > 0) System.Threading.Thread.Sleep(sleepTime);
-                frame = System.Diagnostics.Stopwatch.GetTimestamp();
-            }
-            if (++fpsFrameCount > fps)
-            {
-                fpsFrameCount = 0;
-                fpsStartTime = frame;
-            }
-        }
-
-        private void LoopWith60PS()
-        {
-            while (true)
-            {
-                LimitFPS(60); // Sync with roblox render time
-                var procs = Process.GetProcessesByName("RobloxPlayerBeta");
-                if (procs.Length > 0 && procs.First().Id == CurrentPID)
-                {
-                    WriteMemory<double>(Roblox.Handle, Threadscheduler + DelayOffset, CurrentFps);
-                    label2.Text = "Current FPS: " + numericUpDown1.Value.ToString();
-                }
-            }
         }
         #endregion
 
