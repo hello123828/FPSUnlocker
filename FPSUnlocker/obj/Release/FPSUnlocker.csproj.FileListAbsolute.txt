@@ -1,0 +1,13 @@
+D:\repos\FPSUnlocker\FPSUnlocker\bin\Release\FPSUnlocker.exe.config
+D:\repos\FPSUnlocker\FPSUnlocker\bin\Release\FPSUnlocker.exe
+D:\repos\FPSUnlocker\FPSUnlocker\bin\Release\FPSUnlocker.pdb
+D:\repos\FPSUnlocker\FPSUnlocker\obj\Release\FPSUnlocker.Form1.resources
+D:\repos\FPSUnlocker\FPSUnlocker\obj\Release\FPSUnlocker.Properties.Resources.resources
+D:\repos\FPSUnlocker\FPSUnlocker\obj\Release\FPSUnlocker.csproj.GenerateResource.cache
+D:\repos\FPSUnlocker\FPSUnlocker\obj\Release\FPSUnlocker.exe
+D:\repos\FPSUnlocker\FPSUnlocker\obj\Release\FPSUnlocker.pdb
+D:\repos\FPSUnlocker\FPSUnlocker\bin\Release\Fasm.NET.dll
+D:\repos\FPSUnlocker\FPSUnlocker\bin\Release\MemorySharp.dll
+D:\repos\FPSUnlocker\FPSUnlocker\bin\Release\Fasm.NET.xml
+D:\repos\FPSUnlocker\FPSUnlocker\bin\Release\MemorySharp.xml
+D:\repos\FPSUnlocker\FPSUnlocker\obj\Release\FPSUnlocker.csproj.CopyComplete
