@@ -77,7 +77,7 @@ namespace FPSUnlocker
         }
 
         #region FPSUnlocker
-        int FindTaskSchedulerFrameDelayOffset(IntPtr Handle, IntPtr scheduler)
+        int FindTaskSchedulerFrameDelayOffset(IntPtr Handle, IntPtr scheduler) // Credits to austin
         {
             for (int i = 0x100; i < 0x200; i += 4)
             {
