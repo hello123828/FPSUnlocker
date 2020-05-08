@@ -70,6 +70,8 @@ namespace FPSUnlocker
 
                     Taskscheduler = new RemotePointer(Sharp, GetTaskscheduler).Execute<IntPtr>();
                     DelayOffset = FindTaskSchedulerFrameDelayOffset(Roblox.Handle, Taskscheduler);
+
+                    WriteMemory<double>(Roblox.Handle, Taskscheduler + DelayOffset, CurrentFps);
                 }
                 Thread.Sleep(500);
             }
