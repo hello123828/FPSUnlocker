@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -18,13 +18,13 @@ namespace FPSUnlocker
     public partial class Form1 : Form
     {
         #region Defines
-        Process Roblox;
-        int WrittenBytes = 0;
+        Process Roblox = null;
+        int WrittenBytes, CurrentPID = 0;
         double CurrentFps = 0.0166666666666667;
         IntPtr Threadscheduler;
         int DelayOffset;
         public  MemorySharp Sharp;
-        Thread LoopThread;
+        Thread LoopThread, WatchThread = null;
         bool Init = false;
         #endregion
 
@@ -35,6 +35,9 @@ namespace FPSUnlocker
         private void Form1_Load(object sender, EventArgs e)
         {
             numericUpDown1.Value = 60;
+
+            WatchThread = new Thread(new ThreadStart(WatchProcess));
+            WatchThread.Start();
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -43,16 +46,20 @@ namespace FPSUnlocker
             //    WriteMemory<double>(Roblox.Handle, Threadscheduler + DelayOffset, (double)(1.0 / 60)); // Set back to normal!
             
             LoopThread.Abort();
+            WatchThread.Abort();
         }
 
-        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        private void WatchProcess()
         {
-            if (!Init)
+            while (true)
             {
                 var procs = Process.GetProcessesByName("RobloxPlayerBeta");
-                if (procs.Length > 0)
+                if (procs.Length > 0 && procs.First().Id != CurrentPID)
                 {
                     Roblox = procs.First();
+                    CurrentPID = Roblox.Id;
+
+                    Thread.Sleep(2000); // Delay
 
                     Sharp = new MemorySharp(Roblox);
 
@@ -63,21 +70,22 @@ namespace FPSUnlocker
 
                     Threadscheduler = new RemotePointer(Sharp, GetThreadScheduler).Execute<IntPtr>();
                     DelayOffset = FindTaskSchedulerFrameDelayOffset(Roblox.Handle, Threadscheduler);
-
-                    LoopThread = new Thread(new ThreadStart(LoopWith60PS));
-                    LoopThread.Start();
-                    Init = true;
-                }
-                else
-                {
-                    MessageBox.Show("Roblox Doesnt Exist", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    if (LoopThread == null)
+                    {
+                        LoopThread = new Thread(new ThreadStart(LoopWith60PS));
+                        LoopThread.Start();
+                    }
                 }
             }
+        }
+
+        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        {
             CurrentFps = 1.0 / (double)(numericUpDown1.Value);
         }
 
         #region FPSUnlocker
-        int FindTaskSchedulerFrameDelayOffset(IntPtr Handle, IntPtr scheduler) // Credits to austin
+        int FindTaskSchedulerFrameDelayOffset(IntPtr Handle, IntPtr scheduler) // Thanks to austin
         {
             for (int i = 0x100; i < 0x200; i += 4)
             {
@@ -112,8 +120,12 @@ namespace FPSUnlocker
             while (true)
             {
                 LimitFPS(60); // Sync with roblox render time
-                WriteMemory<double>(Roblox.Handle, Threadscheduler + DelayOffset, CurrentFps);
-                label2.Text = "Current FPS: " + numericUpDown1.Value.ToString();
+                var procs = Process.GetProcessesByName("RobloxPlayerBeta");
+                if (procs.Length > 0 && procs.First().Id == CurrentPID)
+                {
+                    WriteMemory<double>(Roblox.Handle, Threadscheduler + DelayOffset, CurrentFps);
+                    label2.Text = "Current FPS: " + numericUpDown1.Value.ToString();
+                }
             }
         }
         #endregion
