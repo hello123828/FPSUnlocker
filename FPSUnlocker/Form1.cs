@@ -21,7 +21,7 @@ namespace FPSUnlocker
         Process Roblox = null;
         int WrittenBytes, CurrentPID = 0;
         double CurrentFps = 0.0166666666666667;
-        IntPtr Threadscheduler;
+        IntPtr Taskscheduler;
         int DelayOffset;
         public  MemorySharp Sharp;
         Thread WatchThread = null;
@@ -43,7 +43,7 @@ namespace FPSUnlocker
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (Process.GetProcessesByName("RobloxPlayerBeta").Length > 0 && Process.GetProcessesByName("RobloxPlayerBeta").First().Id == CurrentPID)
-                WriteMemory<double>(Roblox.Handle, Threadscheduler + DelayOffset, (double)(1.0 / 60)); // Set back to normal!
+                WriteMemory<double>(Roblox.Handle, Taskscheduler + DelayOffset, (double)(1.0 / 60)); // Set back to normal!
 
             if (WatchThread != null)
                 WatchThread.Abort();
@@ -66,10 +66,10 @@ namespace FPSUnlocker
                     SigScanSharp Sigscan = new SigScanSharp(Roblox.Handle);
                     Sigscan.SelectModule(Roblox.MainModule);
 
-                    IntPtr GetThreadScheduler = traceRelativeCall(Roblox.Handle, Sigscan.FindPattern("E8 ? ? ? ? 8A 4D 08 83 C0 04"));
+                    IntPtr GetTaskscheduler = traceRelativeCall(Roblox.Handle, Sigscan.FindPattern("E8 ? ? ? ? 8A 4D 08 83 C0 04"));
 
-                    Threadscheduler = new RemotePointer(Sharp, GetThreadScheduler).Execute<IntPtr>();
-                    DelayOffset = FindTaskSchedulerFrameDelayOffset(Roblox.Handle, Threadscheduler);
+                    Taskscheduler = new RemotePointer(Sharp, GetTaskscheduler).Execute<IntPtr>();
+                    DelayOffset = FindTaskSchedulerFrameDelayOffset(Roblox.Handle, Taskscheduler);
                 }
                 Thread.Sleep(500);
             }
@@ -79,7 +79,7 @@ namespace FPSUnlocker
         {
             CurrentFps = 1.0 / (double)(numericUpDown1.Value);
             if (Roblox != null)
-                WriteMemory<double>(Roblox.Handle, Threadscheduler + DelayOffset, CurrentFps);
+                WriteMemory<double>(Roblox.Handle, Taskscheduler + DelayOffset, CurrentFps);
         }
 
         #region FPSUnlocker
